@@ -194,7 +194,8 @@ for maze_num in range(1000):
     for i in range(len(maze)):
         for j in range(len(maze[0])):
             if (i, j) in path:
-                maze_img[i,j] = [0,255,0]
+                # Crucial: Saved image doesn't include solved path (has to figure that itself)
+                maze_img[i,j] = [0,0,255]
                 maze_mask[i,j] = 1
                 print(colored("\"", "green"), end = " ")
             elif maze[i][j] == 2.0:
