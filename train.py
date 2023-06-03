@@ -7,10 +7,11 @@ from torch.utils.data import DataLoader
 import os
 from maze_dataset import MazeDataset
 import matplotlib.pyplot as plt
+import numpy as np
 
 lr = 0.001
 batch_size = 16
-epochs = 20
+epochs = 50
 
 model = UNet()
 
@@ -19,17 +20,22 @@ lossfxn = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
-train_dataset = MazeDataset(tranform=ToTensor())
+train_dataset = MazeDataset(transform=ToTensor())
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 
 losses = []
+print("Starting")
 for epoch in range(epochs):
     rl = 0.0
     for images, labels in train_loader:
         output = model(images)
+        print(labels.shape)
+        print(torch.unique(labels))
+        print(output.shape)
+        print(torch.unique(output))
 
-        loss = lossfxn(output, labels)
+        loss = lossfxn(torch.sigmoid(output), labels)
 
         optimizer.zero_grad()
         loss.backward()
