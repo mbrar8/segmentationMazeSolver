@@ -7,9 +7,9 @@ import torchvision.transforms as transforms
 
 
 model = UNet()
-model.load_state_dict(torch.load('unet_maze.pth'))
+model.load_state_dict(torch.load('unet_maze100.pth'))
 model.eval()
-size = 20
+size = 100
 # Labels were converted from 0/1 to 0/0.0039 so adjusted threshold to match
 # Can figure out why and fix later
 threshold = 0.002
@@ -33,6 +33,35 @@ for n in range(num_mazes):
     print(torch.unique(output))
 
     print("True Maze")
+
+
+    if size > 30:
+        # Save image instead of printing if too large (won't fit on terminal screen)
+        output_img = np.zeros((size,size,3), dtype=np.uint8)
+        for i in range(size):
+            for j in range(size):
+                if maze[i, j, 0] == 255:
+                    if output[0,0,i,j] < threshold:
+                        output_img[i,j] = [255,0,0]
+                    else:
+                        output_img[i,j] = [0,255,0]
+                elif maze[i,j,2] == 255:
+                    if output[0,0,i,j] < threshold:
+                        output_img[i,j] = [0,0,255]
+                    else:
+                        output_img[i,j] = [0,255,0]
+
+        plt.imshow(maze)
+        plt.axis('off')
+        plt.savefig("test_true_" + str(n) + ".png")
+        plt.show()
+
+        plt.imshow(output_img)
+        plt.axis('off')
+        plt.savefig("test_output_" + str(n) + ".png")
+        plt.show()
+
+        continue
 
     for i in range(size):
         for j in range(size):

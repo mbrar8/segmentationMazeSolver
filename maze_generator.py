@@ -22,14 +22,14 @@ def checkSurround(maze, wall):
 
 def solveMaze(maze):
     # Implements DFS
+    size = len(maze)
     parent = {}
     visited = []
     stack = []
-    start = (0, 18)
-    end = (19, 1)
+    start = (0, size // 2)
+    end = (size-1, size // 2)
     visited.append(start)
     stack.insert(0, start)
-    size = len(maze)
     while len(stack) > 0:
         pos = stack.pop()
         if pos == end:
@@ -163,28 +163,34 @@ def generate_maze(num_mazes, size, save_img):
             wall_list.remove(wall)
 
 
-        maze[19][1] = 2
-        maze[0][18] = 2
-        entrance = maze[1][18]
-        entrance = 18
-        exit = maze[18][1]
-        exit = 1
+        maze[size - 1][size // 2] = 2
+        maze[0][size // 2] = 2
+        entrance = maze[1][size // 2]
+        entrance = size // 2
+        exit = maze[size - 2][size // 2]
+        exit = size // 2
+        factor = np.random.randint(0, 2)
+        if factor == 0:
+            factor = -1
         while (maze[1][entrance] != 2):
             maze[1][entrance] = 2
-            entrance -= 1
+            entrance += factor
 
-        while (maze[18][exit] != 2):
-            maze[18][exit] = 2
-            exit += 1
+        factor = np.random.randint(0, 2)
+        if factor == 0:
+            factor = -1
+        while (maze[size-2][exit] != 2):
+            maze[size-2][exit] = 2
+            exit += factor
         
         parent = solveMaze(maze)
         path = []
-        node = (19, 1)
-        while (node != (0, 18)):
+        node = (size-1, size // 2)
+        while (node != (0, size // 2)):
             path.append(node)
             node = parent[node]
 
-        path.append((0, 18))
+        path.append((0, size // 2))
 
         maze_img = np.zeros((size, size, 3), dtype=np.uint8)
         maze_mask = np.zeros((size, size), dtype=np.uint8)
@@ -215,12 +221,12 @@ def generate_maze(num_mazes, size, save_img):
             print("Saving img")
             plt.imshow(maze_img)
             plt.axis('off')
-            plt.savefig("saved_imgs/maze_" + str(maze_num) + ".png")
+            plt.savefig("saved_imgs100/maze_" + str(maze_num) + ".png")
             plt.show()
 
             plt.imshow(maze_mask)
             plt.axis('off')
-            plt.savefig("mask_imgs/maze_mask_" + str(maze_num) + ".png")
+            plt.savefig("mask_imgs100/maze_mask_" + str(maze_num) + ".png")
             plt.show()
             continue
 
@@ -231,7 +237,7 @@ def generate_maze(num_mazes, size, save_img):
 
 if __name__ == "__main__":
     # Running the file directly means you want to save the resulting mazes as images (higher resolution results)
-    generate_maze(1000, 20, True)
+    generate_maze(5, 100, True)
 
 
 
