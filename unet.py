@@ -82,7 +82,6 @@ class UNet(nn.Module):
     def forward(self, x):
         # Encoder
         x1 = self.inc(x)
-        print(x1.shape)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
         x4 = self.down3(x3)

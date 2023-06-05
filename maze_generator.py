@@ -5,6 +5,7 @@ from termcolor import colored
 
 
 def checkSurround(maze, wall):
+    size = len(maze)
     total = 0
     if (wall[0] > 0 and maze[wall[0] - 1][wall[1]] == 2):
         total += 1
@@ -28,6 +29,7 @@ def solveMaze(maze):
     end = (19, 1)
     visited.append(start)
     stack.insert(0, start)
+    size = len(maze)
     while len(stack) > 0:
         pos = stack.pop()
         if pos == end:
@@ -57,9 +59,8 @@ def solveMaze(maze):
 
 
 
-def generate_maze(num_mazes, save_img):
+def generate_maze(num_mazes, size, save_img):
     for maze_num in range(num_mazes):
-        size = 20
         # Create 1000 mazes - start is bottom left (19, 0) exit is top right (0, 19)
         maze = np.zeros((size, size))
         # 0 represents unvisited 1 represents a wall and 2 represents a space
@@ -81,9 +82,6 @@ def generate_maze(num_mazes, save_img):
 
         k = 0
         while len(wall_list) > 0:
-            #print(str(k) + " " + str(len(wall_list)))
-            #k += 1
-            print(maze)
             wall_index = np.random.randint(0, len(wall_list))
             wall = wall_list[wall_index]
             if wall[0] > 0 and wall[0] < size - 1 and maze[wall[0] - 1][wall[1]] == 0 and maze[wall[0] + 1][wall[1]] == 2:
@@ -188,28 +186,33 @@ def generate_maze(num_mazes, save_img):
 
         path.append((0, 18))
 
-        maze_img = np.zeros((len(maze), len(maze[0]), 3), dtype=np.uint8)
-        maze_mask = np.zeros((len(maze), len(maze[0])), dtype=np.uint8)
-        for i in range(len(maze)):
-            for j in range(len(maze[0])):
+        maze_img = np.zeros((size, size, 3), dtype=np.uint8)
+        maze_mask = np.zeros((size, size), dtype=np.uint8)
+        for i in range(size):
+            for j in range(size):
                 if (i, j) in path:
                     # Crucial: Saved image doesn't include solved path (has to figure that itself)
                     maze_img[i,j] = [0,0,255]
                     maze_mask[i,j] = 1
-                    print(colored("\"", "green"), end = " ")
+                    if save_img:
+                        print(colored("\"", "green"), end = " ")
                 elif maze[i][j] == 2.0:
                     maze_img[i,j] = [0,0,255]
                     maze_mask[i,j] = 0
-                    print(colored("\"", "blue"), end = " ")
+                    if save_img:
+                        print(colored("\"", "blue"), end = " ")
                 else:
                     maze_img[i,j] = [255,0,0]
                     maze_mask[i,j] = 0
-                    print(colored("#", "red"), end = " ")
+                    if save_img:
+                        print(colored("#", "red"), end = " ")
 
-            print("\n")
+            if save_img:
+                print("\n")
 
 
         if save_img:
+            print("Saving img")
             plt.imshow(maze_img)
             plt.axis('off')
             plt.savefig("saved_imgs/maze_" + str(maze_num) + ".png")
@@ -226,7 +229,7 @@ def generate_maze(num_mazes, save_img):
 
 if __name__ == "__main__":
     # Running the file directly means you want to save the resulting mazes as images (higher resolution results)
-    generate_maze(1000, True)
+    generate_maze(1000, 20, True)
 
 
 
