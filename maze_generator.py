@@ -222,7 +222,9 @@ def generate_maze(num_mazes, size, save_img):
             plt.axis('off')
             plt.savefig("mask_imgs/maze_mask_" + str(maze_num) + ".png")
             plt.show()
+            continue
 
+        # Only returns the maze if not saving the image (not saving means only generate 1 maze per call)
         return (maze_img, maze_mask)
 
 
