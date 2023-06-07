@@ -20,7 +20,7 @@ def checkSurround(maze, wall):
         return True
     return False
 
-def solveMaze(maze):
+def solveMaze(maze, mode='DFS'):
     # Implements DFS
     size = len(maze)
     parent = {}
@@ -29,42 +29,40 @@ def solveMaze(maze):
     start = (0, size // 2)
     end = (size-1, size // 2)
     visited.append(start)
-    stack.insert(0, start)
+    stack.append(start)
     while len(stack) > 0:
-        pos = stack.pop()
+        if mode == 'DFS':
+            pos = stack.pop()
+        else:
+            pos = stack.pop(0)
+
         if pos == end:
             return parent
-        if pos[0] > 0 and maze[pos[0] - 1][pos[1]] == 2 and (pos[0] - 1, pos[1]) not in visited:
-            newPos = (pos[0] - 1, pos[1])
-            visited.append(newPos)
-            stack.insert(0,newPos)
-            parent[newPos] = pos
-        if pos[0] < size - 1 and maze[pos[0] + 1][pos[1]] == 2 and (pos[0] + 1, pos[1]) not in visited:
-            newPos = (pos[0] + 1, pos[1])
-            visited.append(newPos)
-            stack.insert(0, newPos)
-            parent[newPos] = pos
-        if pos[1] > 0 and maze[pos[0]][pos[1] - 1] == 2 and (pos[0], pos[1] - 1) not in visited:
-            newPos = (pos[0], pos[1] - 1)
-            visited.append(newPos)
-            stack.insert(0, newPos)
-            parent[newPos] = pos
-        if pos[1] < size - 1 and maze[pos[0]][pos[1] + 1] == 2 and (pos[0], pos[1] + 1) not in visited:
-            newPos = (pos[0], pos[1] + 1)
-            visited.append(newPos)
-            stack.insert(0, newPos)
-            parent[newPos] = pos
+            
+        x, y = pos
+
+        neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y  + 1)]
+
+        for neighbor in neighbors:
+            nx, ny = neighbor
+
+            if nx >= 0 and nx <= size - 1 and ny >= 0 and ny <= size - 1 and maze[nx][ny] == 2 and neighbor not in visited:
+                visited.append(neighbor)
+                if mode == 'DFS':
+                    stack.insert(0, neighbor)
+                else:
+                    stack.append(neighbor)
+                parent[neighbor] = pos
+
+    return None
 
 
 
-
-
-def generate_maze(num_mazes, size, save_img):
+def generate_maze(num_mazes, size, solveMode='DFS', save_img=True):
     for maze_num in range(num_mazes):
-        # Create 1000 mazes - start is bottom left (19, 0) exit is top right (0, 19)
         maze = np.zeros((size, size))
         # 0 represents unvisited 1 represents a wall and 2 represents a space
-        start = (np.random.randint(1, 20), np.random.randint(1, 20))
+        start = (np.random.randint(1, size), np.random.randint(1, size))
         maze[start[0]][start[1]] = 2
         wall_list = []
         if start[0] - 1 >= 0:
@@ -183,7 +181,7 @@ def generate_maze(num_mazes, size, save_img):
             maze[size-2][exit] = 2
             exit += factor
         
-        parent = solveMaze(maze)
+        parent = solveMaze(maze, solveMode)
         path = []
         node = (size-1, size // 2)
         while (node != (0, size // 2)):
@@ -237,7 +235,7 @@ def generate_maze(num_mazes, size, save_img):
 
 if __name__ == "__main__":
     # Running the file directly means you want to save the resulting mazes as images (higher resolution results)
-    generate_maze(5, 100, True)
+    generate_maze(10, 100, 'BFS', True)
 
 
 

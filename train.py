@@ -26,6 +26,9 @@ parser.add_argument("--data_len",
 parser.add_argument("--size",
         help="Maze size for MazeGeneratorDataset", default=20)
 
+parser.add_argument("--solver", 
+        help="Maze solver for MazeGeneratorDataset", default="DFS")
+
 args = parser.parse_args()
 
 
@@ -46,7 +49,7 @@ maze_dataset = None
 if args.data == "saved":
     maze_dataset = MazeDataset(transform=ToTensor())
 elif args.data == "generate":
-    maze_dataset = MazeGeneratorDataset(args.size, args.data_len, transform=ToTensor())
+    maze_dataset = MazeGeneratorDataset(int(args.size), int(args.data_len), args.solver, transform=ToTensor())
 
 
 train_dataset, val_dataset = random_split(maze_dataset, [0.8, 0.2])
@@ -98,10 +101,10 @@ for epoch in range(epochs):
             print(f"Early Stopping at Epoch {epoch+1}, Min VLoss: {min_val_loss:.4f}")
             break
 
-torch.save(model.state_dict(), 'unet_maze.pth')
+torch.save(model.state_dict(), 'unet_maze' + str(args.size) + '.pth')
 
 
-with open('losses.txt', 'w') as fil:
+with open('losses' + str(args.size) + '.txt', 'w') as fil:
     for loss in losses:
         fil.write(f"{loss}\n")
 
