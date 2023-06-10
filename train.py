@@ -40,7 +40,12 @@ epochs = args.epoch
 
 model = UNet()
 
-lossfxn = nn.BCELoss()
+# Weigh positive samples. 20x20 not very affected but 100x100 is unbalanced classes
+# Rough estimation: A path will be close to size in length, making background approx (size*size) - size
+# Can weigh path pixels by size to bring in line?
+weights = torch.tensor([int(args.size)])
+
+lossfxn = nn.BCEWithLogitsLoss(pos_weight=weights)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -70,7 +75,7 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         output = model(images)
 
-        loss = lossfxn(torch.sigmoid(output), labels)
+        loss = lossfxn(output, labels)
 
         print(f"Batch {i} Loss: {loss:.4f}")
         loss.backward()
@@ -86,16 +91,21 @@ for epoch in range(epochs):
     model.eval()
     for images, labels in val_loader:
         output = model(images)
-        loss = lossfxn(torch.sigmoid(output), labels)
+        loss = lossfxn(output, labels)
         vl += loss.item()
 
     vlloss = vl / len(val_loader)
     losses.append((currloss, vlloss))
     print(f"Epoch [{epoch+1}/{epochs}], Val Loss: {vlloss:.4f}")
+    if vlloss < 0.001:
+        print(f"VLoss below 0.001, stopping Epoch {epoch+1}")
+        break
+
     if min_val_loss > vlloss:
         min_val_loss = vlloss
         early_stopping = 0
     else:
+        print(early_stopping)
         early_stopping += 1
         if early_stopping >= early_stopping_limit:
             print(f"Early Stopping at Epoch {epoch+1}, Min VLoss: {min_val_loss:.4f}")

@@ -4,7 +4,8 @@ from maze_generator import generate_maze
 from termcolor import colored
 from unet import UNet
 import torchvision.transforms as transforms
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 model = UNet()
 model.load_state_dict(torch.load('unet_maze100.pth'))
@@ -16,7 +17,7 @@ threshold = 0.002
 num_mazes = 10
 
 for n in range(num_mazes):
-    maze, mask = generate_maze(1, size, False)
+    maze, mask = generate_maze(1, size, 'BFS', False)
 
 
     trm = transforms.Compose([transforms.ToTensor()])
@@ -28,30 +29,30 @@ for n in range(num_mazes):
 
     output = torch.sigmoid(model(tensor_maze))
 
-    print(output.shape)
-
-    print(torch.unique(output))
-
-    print("True Maze")
-
 
     if size > 30:
         # Save image instead of printing if too large (won't fit on terminal screen)
         output_img = np.zeros((size,size,3), dtype=np.uint8)
+        true_img = np.zeros((size,size,3), dtype=np.uint8)
         for i in range(size):
             for j in range(size):
                 if maze[i, j, 0] == 255:
+                    true_img[i,j] = [255,0,0]
                     if output[0,0,i,j] < threshold:
                         output_img[i,j] = [255,0,0]
                     else:
                         output_img[i,j] = [0,255,0]
                 elif maze[i,j,2] == 255:
+                    if mask[i,j] == 1:
+                        true_img[i,j] = [0,255,0]
+                    else:
+                        true_img[i,j] = [0,0,255]
                     if output[0,0,i,j] < threshold:
                         output_img[i,j] = [0,0,255]
                     else:
                         output_img[i,j] = [0,255,0]
 
-        plt.imshow(maze)
+        plt.imshow(true_img)
         plt.axis('off')
         plt.savefig("test_true_" + str(n) + ".png")
         plt.show()
@@ -63,6 +64,7 @@ for n in range(num_mazes):
 
         continue
 
+    print("True Maze")
     for i in range(size):
         for j in range(size):
             if maze[i, j, 0] == 255:
